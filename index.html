@@ -97,45 +97,36 @@
     }
     </style>
     <script type="text/javascript">
-    // ========= Shim for mobile Safari =========
-
-    function newProgressElement() {
-        var p = document.createElement('progress');
-        if ('position' in p) {
-            return document.createElement('progress');
-        } else {
-            var s = document.createElement('button');
-            s.innerHTML = "loading ... ";
-            return s;
-        }
-    }
-    // ========= end Shim =========
 
     var updateTicker;
     var progressBar;
     var pDetail;
+    var parent;
 
     function generateLink() {
+        parent = document.getElementById('options');
         if (navigator.geolocation) {
+            console.log(navigator.geolocation);
             navigator.geolocation.getCurrentPosition(gotPosition, error, {
                 enableHighAccuracy : true,
                 maximumAge : 15000
             });
             replaceButtonWithProgress();
         } else {
-            error('not supported');
+            alert('Please make sure you have Location Services turned on in your settings. If you have and are still seeing this error, it may be that your browser is obsolete.');
         }
     }
 
     function replaceButtonWithProgress() {
         var button = document.getElementById('btnGenerate');
-        var parent = button.parentNode;
         parent.removeChild(button);
-        progressBar = newProgressElement();
-        progressBar.max = 100;
-        progressBar.value = 10;
-        parent.appendChild(progressBar);
-        updateTicker = setInterval(updateProgressBar, 50);
+        if ('position' in document.createElement('progress')) {
+            progressBar = document.createElement('progress');
+            progressBar.max = 100;
+            progressBar.value = 10;
+            parent.appendChild(progressBar);
+            updateTicker = setInterval(updateProgressBar, 50);
+        }
         pDetail = document.getElementById('pDetail');
         pDetail.innerHTML = "finding location ...";
     }
@@ -145,10 +136,11 @@
         var a = document.createElement('a');
         a.href = linkTarget;
         linkTarget = a.href;
-        // stop updating progress bar
-        clearInterval(updateTicker);
-        var parent = progressBar.parentNode;
-        parent.removeChild(progressBar);
+        if (updateTicker) {
+            // stop updating progress bar
+            clearInterval(updateTicker);
+            parent.removeChild(progressBar);
+        }
         var link = document.createElement('a');
         // link.type = "text";
         link.href = linkTarget;
@@ -157,7 +149,6 @@
         parent.appendChild(link);
         pDetail.innerHTML = "here it is! share this link:";
     }
-
 
     function updateProgressBar() {
         progressBar.value = (progressBar.value + 1) % 100;
@@ -175,16 +166,16 @@
         //TODO: handle
         switch (error.code) {
             case error.PERMISSION_DENIED:
-                console.log("User denied the request for Geolocation.");
+                alert("User denied the request for Geolocation.");
                 break;
             case error.POSITION_UNAVAILABLE:
-                console.log("Location information is unavailable.");
+                alert("Location information is unavailable.");
                 break;
             case error.TIMEOUT:
-                console.log("The request to get user location timed out.");
+                alert("The request to get user location timed out.");
                 break;
             case error.UNKNOWN_ERROR:
-                console.log("An unknown error occurred.");
+                alert("An unknown error occurred.");
                 break;
         }
     }

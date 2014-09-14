@@ -58,7 +58,7 @@ func linkHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Page :: %s %s", r.Method, r.URL)
 
 	matches := locationRegExp.FindStringSubmatch(r.URL.Path)
-	if len(matches) != 2 {
+	if len(matches) < 2 {
 		fmt.Fprintf(w, "Location link is invalid.\n")
 		return
 	}
@@ -67,6 +67,7 @@ func linkHandler(w http.ResponseWriter, r *http.Request) {
 		linkPage.Execute(w, token)
 	} else {
 		fmt.Fprintf(w, "Location link not found. It might have expired?\n")
+		log.Println(matches)
 	}
 
 }
