@@ -97,6 +97,15 @@
     }
     </style>
     <script type="text/javascript">
+    // function handleError(evt) {
+    //     if (evt.message) { // Chrome sometimes provides this
+    //         alert("error: " + evt.message + "  at linenumber: " + evt.lineno + " of file: " + evt.filename);
+    //     } else {
+    //         alert("error: " + evt.type + " from element: " + (evt.srcElement || evt.target));
+    //     }
+    // }
+
+    // window.addEventListener("error", handleError, true);
 
     var updateTicker;
     var progressBar;
@@ -108,8 +117,8 @@
         if (navigator.geolocation) {
             console.log(navigator.geolocation);
             navigator.geolocation.getCurrentPosition(gotPosition, error, {
-                enableHighAccuracy : true,
-                maximumAge : 15000
+                enableHighAccuracy: true,
+                maximumAge: 15000
             });
             replaceButtonWithProgress();
         } else {
@@ -147,7 +156,7 @@
         link.innerHTML = "link to my location";
         link.target = "_blank";
         parent.appendChild(link);
-        pDetail.innerHTML = "here it is! share this link:";
+        pDetail.innerHTML = "here it is! share this link. it'll work for 30 minutes";
     }
 
     function updateProgressBar() {
@@ -155,10 +164,8 @@
     }
 
     function gotPosition(location) {
-        registerLocation(location).then(function(response) {
+        registerLocation(location, function(response) {
             replaceProgressWithLink('/l/' + response.Token)
-        }, function(error) {
-            console.log(error);
         });
     }
 
@@ -180,27 +187,22 @@
         }
     }
 
-    function registerLocation(location) {
-        var p = new Promise(function(resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/v1/request', true);
-            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    resolve(JSON.parse(xhr.response));
-                } else if (xhr.readyState > 4) {
-                    reject('bad request :(');
-                }
-            };
-            var APIRequest = {
-                'lat': location.coords.latitude,
-                'lon': location.coords.longitude,
-                'accuracy': location.coords.accuracy,
-                'timestamp': location.timestamp
-            };
-            xhr.send(JSON.stringify(APIRequest));
-        });
-        return p;
+    function registerLocation(location, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/v1/request', true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                callback(JSON.parse(xhr.response));
+            }
+        };
+        var APIRequest = {
+            'lat': location.coords.latitude,
+            'lon': location.coords.longitude,
+            'accuracy': location.coords.accuracy,
+            'timestamp': location.timestamp
+        };
+        xhr.send(JSON.stringify(APIRequest));
     }
     </script>
 </head>
@@ -209,7 +211,9 @@
     <div id="page" class="rounded">
         <section id="explanation">
             <h3>share my location</h3>
-            <p id="pDetail">click the button below to get a shareable link to your current location<br/><br/>note: turn on GPS for better accuracy</p>
+            <p id="pDetail">click the button below to get a shareable link to your current location
+                <br/>
+                <br/>note: turn on GPS for better accuracy</p>
         </section>
         <section id="options">
             <button id="btnGenerate" onclick="generateLink()">create location link</button>

@@ -45,7 +45,10 @@
             accuracy: {{.Accuracy}},
             timestamp: {{.Timestamp}}
         };
-        initialiseMap(position.lat, position.lon);
+        // let the page render?
+        setTimeout(function() {
+            initialiseMap(position.lat, position.lon)
+        }, 100);
     }
 
     function initialiseMap(lat, lon) {

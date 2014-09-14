@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 )
 
 var indexPage *template.Template = nil
@@ -100,6 +101,12 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	response, err := json.Marshal(token)
 	check(err)
 	fmt.Fprintf(w, string(response))
+
+	removeRecord := func() {
+		log.Println("removing record", id)
+		delete(locations, id)
+	}
+	time.AfterFunc(30*time.Minute, removeRecord)
 }
 
 func main() {
