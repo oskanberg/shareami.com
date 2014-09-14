@@ -4,6 +4,7 @@
 <head>
     <title>Location</title>
     <meta name="viewport" content="width=device-width">
+    <link href='http://fonts.googleapis.com/css?family=Dosis:400,700' rel='stylesheet' type='text/css'>
     <style type="text/css">
         body {
             background-color: #F5DFAE;
@@ -16,6 +17,22 @@
             right: 0;
             bottom: 0;
             left: 0;
+        }
+        div#overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1;
+            background-color: rgba(0,0,0,0.5);
+        }
+        div#overlay h1 {
+            text-align: center;
+            padding-top: 25%;
+            color: white;
+            font-family: 'Dosis', sans-serif;
+            font-size: 1.5em;
         }
     </style>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
@@ -44,12 +61,18 @@
             position: centerPosition,
             map: map
         });
+        google.maps.event.addListenerOnce(map, 'tilesloaded', function(){
+            document.getElementById('overlay').style.display = 'none';
+        });
     }
 
     </script>
 </head>
 
 <body>
+    <div id="overlay">
+        <h1>loading ...</h1>
+    </div>
     <div id="mapCanvas"></div>
 </body>
 

@@ -49,7 +49,7 @@ type Location struct {
 
 var locations = map[string]Location{}
 
-var locationRegExp, _ = regexp.Compile("^\\/l\\/([a-zA-Z0-9+\\/]+={0,2})$")
+var locationRegExp, _ = regexp.Compile("^\\/l\\/([a-zA-Z0-9+\\/]+)$")
 
 func linkHandler(w http.ResponseWriter, r *http.Request) {
 	if linkPage == nil {
@@ -80,6 +80,8 @@ func newLocationId() string {
 	f.Read(r)
 
 	id := base64.StdEncoding.EncodeToString(r)
+	// remove = from the end
+	id = id[0 : len(id)-1]
 	return id
 }
 

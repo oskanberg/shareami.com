@@ -10,8 +10,8 @@
         background-color: #F5DFAE;
     }
     div#page {
-        width: 90%;
-        min-width: 200px;
+        width: auto;
+        min-width: 175px;
         background-color: white;
         padding: 1em;
         margin: 0 auto;
@@ -19,6 +19,8 @@
         -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
         -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
         box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+        font-family: 'Dosis', sans-serif;
+        font-size: 1.5em;
     }
     @media screen and (min-width: 40.5em) {
         div#page {
@@ -29,10 +31,6 @@
             margin: 0 auto;
             margin-top: 10%;
         }
-    }
-    section#explanation {
-        font-family: 'Dosis', sans-serif;
-        font-size: 1.5em;
     }
     section#explanation h3 {
         margin: 0.75em;
@@ -45,7 +43,7 @@
         margin: 0 auto;
     }
     section#options button {
-        font-size: 200%;
+        font-size: 100%;
         padding: 0.5em 1em;
         color: rgba(0, 0, 0, 0.8);
         border: 0px none transparent;
@@ -76,24 +74,53 @@
         width: 100%;
         height: 100%;
     }
-    section#options input {
+    section#options a {
         padding: 1em;
         display: block;
         margin: 0 auto;
-        width: 90%;
+        text-align: center;
+        background-color: beige;
+    }
+    section#options a:focus {
+        outline: 0 !important;
+    }
+    section#options a::-moz-focus-inner {
+        border: 0;
+    }
+    @media screen and (min-width: 40.5em) {
+        div#options input {
+            text-align: inherit;
+        }
     }
     .rounded {
         border-radius: 1em;
     }
     </style>
     <script type="text/javascript">
+    // ========= Shim for mobile Safari =========
+
+    function newProgressElement() {
+        var p = document.createElement('progress');
+        if ('position' in p) {
+            return document.createElement('progress');
+        } else {
+            var s = document.createElement('button');
+            s.innerHTML = "loading ... ";
+            return s;
+        }
+    }
+    // ========= end Shim =========
+
     var updateTicker;
     var progressBar;
     var pDetail;
 
     function generateLink() {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(gotPosition, error);
+            navigator.geolocation.getCurrentPosition(gotPosition, error, {
+                enableHighAccuracy : true,
+                maximumAge : 15000
+            });
             replaceButtonWithProgress();
         } else {
             error('not supported');
@@ -104,7 +131,7 @@
         var button = document.getElementById('btnGenerate');
         var parent = button.parentNode;
         parent.removeChild(button);
-        progressBar = document.createElement('progress');
+        progressBar = newProgressElement();
         progressBar.max = 100;
         progressBar.value = 10;
         parent.appendChild(progressBar);
@@ -122,14 +149,12 @@
         clearInterval(updateTicker);
         var parent = progressBar.parentNode;
         parent.removeChild(progressBar);
-        var inputArea = document.createElement('input');
-        inputArea.type = "text";
-        inputArea.value = linkTarget;
-        inputArea.onclick = function() {
-            this.focus();
-            this.select();
-        };
-        parent.appendChild(inputArea);
+        var link = document.createElement('a');
+        // link.type = "text";
+        link.href = linkTarget;
+        link.innerHTML = "link to my location";
+        link.target = "_blank";
+        parent.appendChild(link);
         pDetail.innerHTML = "here it is! share this link:";
     }
 
@@ -192,8 +217,8 @@
 <body>
     <div id="page" class="rounded">
         <section id="explanation">
-            <h3>share your current location</h3>
-            <p id="pDetail">click the button below to get a shareable link to your current location</p>
+            <h3>share my location</h3>
+            <p id="pDetail">click the button below to get a shareable link to your current location<br/><br/>note: turn on GPS for better accuracy</p>
         </section>
         <section id="options">
             <button id="btnGenerate" onclick="generateLink()">create location link</button>
