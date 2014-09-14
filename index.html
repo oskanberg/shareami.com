@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Share Am I?</title>
+    <meta name="viewport" content="width=device-width">
+    <link href='http://fonts.googleapis.com/css?family=Dosis:400,700' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+    body {
+        background-color: #F5DFAE;
+    }
+    div#page {
+        width: 90%;
+        min-width: 200px;
+        background-color: white;
+        padding: 1em;
+        margin: 0 auto;
+        margin-top: 10%;
+        -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+        -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+    }
+    @media screen and (min-width: 40.5em) {
+        div#page {
+            width: 25%;
+            min-width: 200px;
+            background-color: white;
+            padding: 1em;
+            margin: 0 auto;
+            margin-top: 10%;
+        }
+    }
+    section#explanation {
+        font-family: 'Dosis', sans-serif;
+        font-size: 1.5em;
+    }
+    section#explanation h3 {
+        margin: 0.75em;
+        font-size: 1.2em;
+    }
+    section#explanation p {
+        margin: 1.5em;
+    }
+    section#options {
+        margin: 0 auto;
+    }
+    section#options button {
+        font-size: 200%;
+        padding: 0.5em 1em;
+        color: rgba(0, 0, 0, 0.8);
+        border: 0px none transparent;
+        cursor: pointer;
+        background-color: #E6E6E6;
+        text-decoration: none;
+        background: rgb(202, 60, 60);
+        color: white;
+        border-radius: 0.3em;
+        text-shadow: 0 2px 2px rgba(0, 0, 0, 0.5);
+        -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+        -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+        width: 100%;
+    }
+    section#options button:active {
+        -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5) inset;
+        -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5) inset;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5) inset;
+    }
+    section#options button:focus {
+        outline: 0 !important;
+    }
+    section#options button::-moz-focus-inner {
+        border: 0;
+    }
+    section#options progress {
+        width: 100%;
+        height: 100%;
+    }
+    section#options input {
+        padding: 1em;
+        display: block;
+        margin: 0 auto;
+        width: 90%;
+    }
+    .rounded {
+        border-radius: 1em;
+    }
+    </style>
+    <script type="text/javascript">
+    var updateTicker;
+    var progressBar;
+    var pDetail;
+
+    function generateLink() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(gotPosition, error);
+            replaceButtonWithProgress();
+        } else {
+            error('not supported');
+        }
+    }
+
+    function replaceButtonWithProgress() {
+        var button = document.getElementById('btnGenerate');
+        var parent = button.parentNode;
+        parent.removeChild(button);
+        progressBar = document.createElement('progress');
+        progressBar.max = 100;
+        progressBar.value = 10;
+        parent.appendChild(progressBar);
+        updateTicker = setInterval(updateProgressBar, 50);
+        pDetail = document.getElementById('pDetail');
+        pDetail.innerHTML = "finding location ...";
+    }
+
+    function replaceProgressWithLink(linkTarget) {
+        // get fully qualified
+        var a = document.createElement('a');
+        a.href = linkTarget;
+        linkTarget = a.href;
+        // stop updating progress bar
+        clearInterval(updateTicker);
+        var parent = progressBar.parentNode;
+        parent.removeChild(progressBar);
+        var inputArea = document.createElement('input');
+        inputArea.type = "text";
+        inputArea.value = linkTarget;
+        inputArea.onclick = function() {
+            this.focus();
+            this.select();
+        };
+        parent.appendChild(inputArea);
+        pDetail.innerHTML = "here it is! share this link:";
+    }
+
+
+    function updateProgressBar() {
+        progressBar.value = (progressBar.value + 1) % 100;
+    }
+
+    function gotPosition(location) {
+        registerLocation(location).then(function(response) {
+            replaceProgressWithLink('/l/' + response.Token)
+        }, function(error) {
+            console.log(error);
+        });
+    }
+
+    function error(error) {
+        //TODO: handle
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                console.log("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                console.log("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                console.log("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                console.log("An unknown error occurred.");
+                break;
+        }
+    }
+
+    function registerLocation(location) {
+        var p = new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/v1/request', true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    resolve(JSON.parse(xhr.response));
+                } else if (xhr.readyState > 4) {
+                    reject('bad request :(');
+                }
+            };
+            var APIRequest = {
+                'lat': location.coords.latitude,
+                'lon': location.coords.longitude,
+                'accuracy': location.coords.accuracy,
+                'timestamp': location.timestamp
+            };
+            xhr.send(JSON.stringify(APIRequest));
+        });
+        return p;
+    }
+    </script>
+</head>
+
+<body>
+    <div id="page" class="rounded">
+        <section id="explanation">
+            <h3>share your current location</h3>
+            <p id="pDetail">click the button below to get a shareable link to your current location</p>
+        </section>
+        <section id="options">
+            <button id="btnGenerate" onclick="generateLink()">create location link</button>
+        </section>
+    </div>
+</body>
+
+</html>

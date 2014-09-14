@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Location</title>
+    <meta name="viewport" content="width=device-width">
+    <style type="text/css">
+        body {
+            background-color: #F5DFAE;
+            height: 100%;
+            width: 100%;
+        }
+        div#mapCanvas {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript">
+
+    window.onload = function() {
+        var position = {
+            lat: {{.Lat}},
+            lon: {{.Lon}},
+            accuracy: {{.Accuracy}},
+            timestamp: {{.Timestamp}}
+        };
+        initialiseMap(position.lat, position.lon);
+    }
+
+    function initialiseMap(lat, lon) {
+        var mapDiv = document.getElementById('mapCanvas');
+        var centerPosition = new google.maps.LatLng(lat, lon);
+        var opt = {
+            zoom: 15,
+            center: centerPosition,
+            mapTypeId: 'terrain'
+        };
+        var map = new google.maps.Map(mapDiv, opt);
+        var marker = new google.maps.Marker({
+            position: centerPosition,
+            map: map
+        });
+    }
+
+    </script>
+</head>
+
+<body>
+    <div id="mapCanvas"></div>
+</body>
+
+</html>
