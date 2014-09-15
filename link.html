@@ -18,7 +18,7 @@
             bottom: 0;
             left: 0;
         }
-        div#overlay {
+        div.fullscreen {
             position: absolute;
             top: 0;
             right: 0;
@@ -27,12 +27,47 @@
             z-index: 1;
             background-color: rgba(0,0,0,0.5);
         }
+        div.bannerBottom {
+            position: absolute;
+            height: 7%;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1;
+            background-color: rgba(0,0,0,0.75);
+        }
+        @media screen and (min-width: 40.5em) {
+            div.bannerBottom {
+                height: 5%;
+            }
+        }
+        div#overlay h1, a, p {
+            color: white;
+            font-family: 'Dosis', sans-serif;
+        }
         div#overlay h1 {
             text-align: center;
             padding-top: 25%;
-            color: white;
-            font-family: 'Dosis', sans-serif;
             font-size: 1.5em;
+        }
+        div#overlay a {
+            padding-right: 2em;
+            font-size: 1.25em;
+            position: relative;
+            top: 15%;
+            font-weight: bold;
+            float: right;
+        }
+        @media screen and (min-width: 40.5em) {
+            div.bannerBottom {
+                height: 5%;
+            }
+            div#overlay a {
+                top: 25%;
+            }
+        }
+        .displayNone {
+            display: none;
         }
     </style>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
@@ -45,7 +80,10 @@
             accuracy: {{.Accuracy}},
             timestamp: {{.Timestamp}}
         };
-        // let the page render?
+        // set 'open in gmaps' link
+        var gmapLink = 'https://www.google.co.uk/maps/place/' + position.lat + ',' + position.lon;
+        document.getElementById('aGMaps').href = gmapLink;
+        // let the overlay render
         setTimeout(function() {
             initialiseMap(position.lat, position.lon)
         }, 100);
@@ -57,15 +95,21 @@
         var opt = {
             zoom: 15,
             center: centerPosition,
-            mapTypeId: 'terrain'
+            mapTypeId: 'roadmap'
         };
         var map = new google.maps.Map(mapDiv, opt);
         var marker = new google.maps.Marker({
             position: centerPosition,
             map: map
         });
-        google.maps.event.addListenerOnce(map, 'tilesloaded', function(){
-            document.getElementById('overlay').style.display = 'none';
+        google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+            var overlay = document.getElementById('overlay');
+            // remove loading
+            var loading = document.getElementById('loading');
+            loading.parentElement.removeChild(loading);
+            overlay.className = 'bannerBottom';
+            // unhide
+            document.getElementById('aGMaps').className = '';
         });
     }
 
@@ -73,8 +117,9 @@
 </head>
 
 <body>
-    <div id="overlay">
-        <h1>loading ...</h1>
+    <div id="overlay" class="fullscreen">
+        <h1 id="loading">loading ...</h1>
+        <a id="aGMaps" target="_blank" class="displayNone" href="#">Open in Google Maps</a>
     </div>
     <div id="mapCanvas"></div>
 </body>
